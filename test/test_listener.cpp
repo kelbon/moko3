@@ -27,7 +27,7 @@ struct tlistener : moko3::test_listener_i {
     cases.push_back(i.name);
   }
   void on_test_case_end(const moko3::test_run_info& i) noexcept {
-    cases_ended.push_back(i.testname);
+    cases_ended.push_back(i.casename);
   }
 };
 

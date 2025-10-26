@@ -22,8 +22,6 @@ target_include_directories(moko3lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
 
 target_link_libraries(moko3lib PUBLIC
     ${CMAKE_THREAD_LIBS_INIT}
-    anyanylib
-    kelcorolib
     zallib
     clinoklib
 )

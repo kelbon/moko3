@@ -3,11 +3,14 @@
 #include <memory>
 #include <string_view>
 #include <string>
+#include <source_location>
 
 namespace moko3 {
 
 struct test_run_info {
-  std::string testname = {};
+  // full name of case, e.g. "A::B" (test A section B)
+  std::string casename = {};
+  // present if `failed`
   std::string failreason = {};
   bool failed = false;
 };
@@ -28,19 +31,21 @@ struct test_exception {
 
  public:
   test_exception() = default;
-  test_exception(std::string m) noexcept : msg(std::move(m)) {
+  explicit test_exception(std::string m) noexcept : msg(std::move(m)) {
   }
 
   // forbid move
   test_exception(test_exception const&) = default;
   virtual ~test_exception();
   virtual std::string_view what() const noexcept {
-    return "";
+    return msg;
   }
 };
 
+// should be used only inside implementation
 struct test_failed : test_exception {
-  using test_exception::test_exception;
+  test_failed() = default;
+  explicit test_failed(std::string m, std::source_location l = std::source_location::current()) noexcept;
 };
 
 }  // namespace moko3

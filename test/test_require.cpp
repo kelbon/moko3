@@ -15,9 +15,9 @@ struct tlistener : moko3::test_listener_i {
   }
   void on_test_case_end(const moko3::test_run_info& i) noexcept {
     if (i.failed) {
-      output.push_back(std::format("case failed {}", i.testname));
+      output.push_back(std::format("case failed {}", i.casename));
     } else {
-      output.push_back(std::format("case ended {}", i.testname));
+      output.push_back(std::format("case ended {}", i.casename));
     }
   }
 };

@@ -9,20 +9,6 @@ CPMAddPackage(
 
 include(${CCOZY_SOURCE_DIR}/ccozy_tools.cmake)
 
-# C++20 coroutines (kelcorolib)
-CPMAddPackage(
-  NAME KELCORO
-  GITHUB_REPOSITORY kelbon/kelcoro
-  GIT_TAG v1.2.0
-)
-
-# move_only_function, function ref etc (anyanylib)
-CPMAddPackage(
-  NAME ANYANY
-  GITHUB_REPOSITORY kelbon/AnyAny
-  GIT_TAG v1.1.0
-)
-
 # on_scope_exit / on_scope_failure (zallib)
 CPMAddPackage(
   NAME LOGIC_GUARDS

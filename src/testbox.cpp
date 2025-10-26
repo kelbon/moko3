@@ -5,6 +5,46 @@
 
 namespace moko3 {
 
+void gtest_listener::on_start() noexcept {
+  runned_tests = runned_cases = 0;
+  failed.clear();
+}
+
+void gtest_listener::on_end() noexcept {
+  get_testbox().out << std::format(
+      "[==========] {} cases from {} tests ran\n"
+      "[  PASSED  ] {} tests.\n",
+      runned_cases, runned_tests, runned_cases - failed.size());
+  if (!failed.empty()) {
+    get_testbox().out << std::format("[  FAILED  ] {} tests, listed below:\n", failed.size());
+    for (std::string_view name : failed) {
+      get_testbox().out << std::format("[  FAILED  ] {}\n", name);
+    }
+  }
+  std::endl(get_testbox().out);
+}
+
+void gtest_listener::on_test_start(testinfo const& t) noexcept {
+  ++runned_tests;
+}
+void gtest_listener::on_test_end(testinfo const& t) noexcept {
+}
+
+void gtest_listener::on_test_case_start(testinfo const& t) noexcept {
+  ++runned_cases;
+  // flush for case if test deadlocks
+  get_testbox().out << std::format("[ RUN      ] {}", t.name) << std::endl;
+}
+
+void gtest_listener::on_test_case_end(const test_run_info& t) noexcept {
+  if (!t.failed) {
+    get_testbox().out << std::format("[       OK ] {}", t.casename) << '\n';
+  } else {
+    get_testbox().out << std::format("[  FAILED  ] {}", t.casename) << '\n';
+    failed.push_back(t.casename);
+  }
+}
+
 testbox::testbox() : listener(std::make_unique<test_listener_i>()) {
 }
 
@@ -62,7 +102,7 @@ int testbox::run_tests() {
         runinfo.failreason = "unknown exception";
         runinfo.failed = true;
       }
-      runinfo.testname = toplevel_section.runned_case_name();
+      runinfo.casename = toplevel_section.runned_case_name();
       listener->on_test_case_end(runinfo);
       if (runinfo.failed) {
         ++failed;

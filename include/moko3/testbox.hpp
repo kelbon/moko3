@@ -18,7 +18,7 @@ struct testinfo {
   test_fn_t* func;
 };
 
-// interface for handling
+// interface
 struct test_listener_i {
   // called once when test running starts
   virtual void on_start() noexcept {
@@ -43,6 +43,23 @@ struct test_listener_i {
   }
 };
 
+// prints in google test style
+struct gtest_listener : test_listener_i {
+ private:
+  size_t runned_tests = 0;
+  size_t runned_cases = 0;
+  std::vector<std::string> failed;
+
+ public:
+  void on_start() noexcept override;
+  void on_end() noexcept override;
+  void on_test_start(testinfo const&) noexcept override;
+  void on_test_end(testinfo const&) noexcept override;
+
+  void on_test_case_start(testinfo const&) noexcept override;
+  void on_test_case_end(const test_run_info& t) noexcept override;
+};
+
 struct testbox {
  private:
   std::vector<testinfo> tests;
@@ -52,6 +69,8 @@ struct testbox {
   section_info* cur_running_test = nullptr;
 
  public:
+  std::ostream& out = std::cout;
+
   testbox();
 
   void register_test(std::string testname, test_fn_t* test);

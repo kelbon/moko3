@@ -110,6 +110,8 @@ TEST("METATEST") {
   return expected_metatest_result == metatest_result;
 }
 
+REGISTER_TEST_LISTENER(moko3::gtest_listener);
+
 int main(int argc, char* argv[]) try {
   auto& box = moko3::get_testbox();
   box.parse_config(argc, argv);
