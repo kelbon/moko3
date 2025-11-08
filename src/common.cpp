@@ -8,7 +8,8 @@
 namespace moko3 {
 
 test_exception::~test_exception() {
-  if (*activated) {
+  // if its last exception copy (in chain for example) and its not deactivated yet
+  if (activated.use_count() == 1 && *activated) {
     std::cerr << "moko3: invalid usage. Test failure exception was catched";
     std::terminate();
   }
