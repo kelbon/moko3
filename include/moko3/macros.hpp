@@ -70,9 +70,9 @@
   void MOKO3_UNIQUE_NAME(::moko3::top_lvl_section* _section)
 
 // declares and implements `main` which accepts and parses cli arguments, then runs tests
-#define MOKO3_MAIN                                        \
-  int main(int argc, char* argv[]) {                      \
-    auto& box = ::moko3::get_testbox();                   \
-    box.config = ::moko3::cli::parse_or_exit(argc, argv); \
-    return box.run_tests();                               \
+#define MOKO3_MAIN                      \
+  int main(int argc, char* argv[]) {    \
+    auto& box = ::moko3::get_testbox(); \
+    box.parse_config(argc, argv);       \
+    return box.run_tests();             \
   }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <random>
 
 #include "moko3/common.hpp"
 #include "moko3/sections.hpp"
@@ -69,9 +70,14 @@ struct testbox {
   section_info* cur_running_test = nullptr;
 
  public:
+  std::minstd_rand randg;
   std::ostream& out = std::cout;
 
   testbox();
+
+  void set_random(size_t seed) noexcept {
+    randg = std::minstd_rand(seed);
+  }
 
   void register_test(std::string testname, test_fn_t* test);
   void register_listener(std::unique_ptr<test_listener_i>);
