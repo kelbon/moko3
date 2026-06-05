@@ -41,6 +41,7 @@ void gtest_listener::on_test_case_end(const test_run_info& t) noexcept {
     get_testbox().out << std::format("[       OK ] {}", t.casename) << '\n';
   } else {
     get_testbox().out << std::format("[  FAILED  ] {}", t.casename) << '\n';
+    get_testbox().out << t.failreason << '\n';
     failed.push_back(t.casename);
   }
 }
