@@ -36,13 +36,13 @@
       if (auto* _section = &MOKO3_UNIQUE_NAME; true)
 
 // `forks` test and runs all of its cases with each value from __VA_ARGS__
-// may be used only on top-level in test and only once for each test
+// may be used in SECTION too, invokes test with this section for each value
 //
 // example (runs "my test" 3 times):
 //  TEST("my test") {
 //    int i = GENERATE(1, 2, 3);
 //  }
-#define GENERATE(...) _section->next_generated_value(::std::to_array({__VA_ARGS__}))
+#define GENERATE(...) _section->next_generated_value(::std::to_array({__VA_ARGS__}), __LINE__)
 
 /////////////////////////////////// ASSERTIONS ////////////////////////////////
 
@@ -60,14 +60,14 @@
   }
 
 // creates and registers TEST. Code in test may use SECTION / GENERATE macros
-#define TEST(NAME)                                            \
-  void MOKO3_UNIQUE_NAME(::moko3::top_lvl_section* _section); \
-  MOKO3_REGISTER_TEST(                                        \
-      NAME, +[](::moko3::top_lvl_section* _section) {         \
-        MOKO3_UNIQUE_NAME(_section);                          \
-        return ::moko3::test_run_info{};                      \
-      });                                                     \
-  void MOKO3_UNIQUE_NAME(::moko3::top_lvl_section* _section)
+#define TEST(NAME)                                         \
+  void MOKO3_UNIQUE_NAME(::moko3::section_info* _section); \
+  MOKO3_REGISTER_TEST(                                     \
+      NAME, +[](::moko3::section_info* _section) {         \
+        MOKO3_UNIQUE_NAME(_section);                       \
+        return ::moko3::test_run_info{};                   \
+      });                                                  \
+  void MOKO3_UNIQUE_NAME(::moko3::section_info* _section)
 
 // declares and implements `main` which accepts and parses cli arguments, then runs tests
 #define MOKO3_MAIN                      \

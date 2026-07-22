@@ -6,11 +6,17 @@
 namespace moko3 {
 
 void section_info::reuse() {
-  was_entered = false;
+  if (!toplevel && !need_run())
+    return;
+  was_entered = toplevel;
   current_run_section = nullptr;
-  generation_index = size_t(-1);
-  generation_index_bound = size_t(-1);
   reuse_inners();
+  auto is_need_run = [](section_info* i) { return i->need_run(); };
+  if (std::ranges::none_of(registered_sections, is_need_run) && has_more_generate_values()) {
+    ++generate_index;
+    for (section_info* i : registered_sections)
+      i->mark_not_entered();
+  }
 }
 
 void section_info::register_section(section_info* s) noexcept {
@@ -47,33 +53,22 @@ void section_info::prepare_to_run() noexcept {
 void section_info::mark_toplevel() noexcept {
   was_entered = true;  // mark entered, since no one will mark top level section entered
   registered = true;
+  toplevel = true;
 }
 
 bool section_info::need_run() noexcept {
-  if (!was_entered)
-    return true;  // not runned yet
-  // false when registered sections empty
-  bool b = std::any_of(registered_sections.begin(), registered_sections.end(),
-                       [](section_info* i) { return i->need_run(); });
-  if (b || generation_index == size_t(-1))
-    return b;
-  if (generation_index == generation_index_bound - 1)
-    return false;
-  // all sections ran with this generation value, get next
-  ++generation_index;
-  reuse_inners();
-  return true;
+  auto is_need_run = [](section_info* i) { return i->need_run(); };
+  return !was_entered || has_more_generate_values() || std::ranges::any_of(registered_sections, is_need_run);
 }
 
-// returns name -> section -> section etc of last runned case
 std::string section_info::runned_case_name() const {
   assert(registered && was_entered);
   std::string res = name;
+  if (has_generate())
+    res += std::format("::G{}", generate_index);
   if (current_run_section)
     res = std::move(res) + "::" + current_run_section->runned_case_name();
 
-  if (generation_index != size_t(-1))
-    res += std::format("::G{}", generation_index);
   return res;
 }
 

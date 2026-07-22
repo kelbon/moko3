@@ -32,12 +32,19 @@ struct tlistener : moko3::test_listener_i {
 };
 
 TEST("A") {
-  SECTION("C") {
+  SECTION("A1") {
   }
 }
 
 TEST("B") {
   (void)GENERATE(1, 2);
+}
+
+TEST("C") {
+  (void)GENERATE(1, 2);
+  SECTION("C1") {
+    (void)GENERATE(3, 4);
+  }
 }
 
 REGISTER_TEST_LISTENER(tlistener);
@@ -52,19 +59,16 @@ int main() {
   std::vector<std::string> expected_tests{
       "A",
       "B",
+      "C",
   };
   REQUIRE(l.tests == expected_tests);
   REQUIRE(l.tests_ended == expected_tests);
   std::vector<std::string> expected_cases{
-      "A",
-      "B",
-      "B",
+      "A", "B", "B", "C", "C", "C", "C",
   };
   REQUIRE(l.cases == expected_cases);
   std::vector<std::string> expected_cases_ended{
-      "A::C",
-      "B::G0",
-      "B::G1",
+      "A::A1", "B::G0", "B::G1", "C::G0::C1::G0", "C::G0::C1::G1", "C::G1::C1::G0", "C::G1::C1::G1",
   };
   REQUIRE(l.cases_ended == expected_cases_ended);
 }

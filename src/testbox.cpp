@@ -82,11 +82,11 @@ int testbox::run_tests() {
     if (config.dry_run)
       continue;
     listener->on_test_start(i);
-    top_lvl_section toplevel_section;
+    section_info toplevel_section;
     toplevel_section.name = i.name;
     cur_running_test = &toplevel_section;
     toplevel_section.mark_toplevel();
-    do {
+    for (;;) {
       toplevel_section.prepare_to_run();
       test_run_info runinfo;
       listener->on_test_case_start(i);
@@ -109,7 +109,11 @@ int testbox::run_tests() {
         ++failed;
         break;
       }
-    } while (toplevel_section.need_run());
+      if (toplevel_section.need_run())
+        toplevel_section.reuse();
+      else
+        break;
+    }
     listener->on_test_end(i);
   }
   return failed;
