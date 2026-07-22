@@ -12,7 +12,7 @@
 
 namespace moko3 {
 
-using test_fn_t = test_run_info(top_lvl_section* /*top level section*/);
+using test_fn_t = test_run_info(section_info* /*top level section*/);
 
 struct testinfo {
   std::string name;
