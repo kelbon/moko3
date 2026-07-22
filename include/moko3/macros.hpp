@@ -28,12 +28,14 @@
 // only one section is active on scope level
 // May be used in tests, other sections.
 // Note: works in loops correctly
-#define SECTION(NAME)                                                                              \
-  static ::moko3::section_info MOKO3_UNIQUE_NAME{.name = NAME};                                    \
-  _section->register_section(&MOKO3_UNIQUE_NAME);                                                  \
-  if (_section->enter_section(&MOKO3_UNIQUE_NAME))                                                 \
-    if (::zal::scope_exit _exit_guard{[&] { _section->leave_section(&MOKO3_UNIQUE_NAME); }}; true) \
-      if (auto* _section = &MOKO3_UNIQUE_NAME; true)
+// `...` accepts optional additional part of name for declaring sevral SECTION on same line (e.g. in macro)
+#define SECTION(NAME, ...)                                                                                \
+  static ::moko3::section_info MOKO3_UNIQUE_NAME##__VA_ARGS__{.name = NAME};                              \
+  _section->register_section(&MOKO3_UNIQUE_NAME##__VA_ARGS__);                                            \
+  if (_section->enter_section(&MOKO3_UNIQUE_NAME##__VA_ARGS__))                                           \
+    if (::zal::scope_exit _exit_guard{[&] { _section->leave_section(&MOKO3_UNIQUE_NAME##__VA_ARGS__); }}; \
+        true)                                                                                             \
+      if (auto* _section = &MOKO3_UNIQUE_NAME##__VA_ARGS__; true)
 
 // `forks` test and runs all of its cases with each value from __VA_ARGS__
 // may be used in SECTION too, invokes test with this section for each value

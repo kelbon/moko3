@@ -153,6 +153,17 @@ bool metatest_generates_passed() {
 }
 
 REGISTER_TEST_LISTENER(moko3::gtest_listener);
+#define THREE_SECTIONS \
+  SECTION("A", 1) {    \
+  }                    \
+  SECTION("B", 2) {    \
+  }                    \
+  SECTION("C", 3) {    \
+  }
+TEST("HMM") {
+  // must compile
+  THREE_SECTIONS;
+}
 
 int main(int argc, char* argv[]) try {
   auto& box = moko3::get_testbox();
