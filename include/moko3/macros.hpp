@@ -10,6 +10,8 @@
 // its useful for big one-line macros with several usages of same name
 #define MOKO3_UNIQUE_NAME LOGIC_GUARDS_CONCAT(moko3, __LINE__, __LINE__)
 #define MOKO3_UNIQUE_NAME2 LOGIC_GUARDS_CONCAT(moko3_2, __LINE__, __LINE__)
+// для SECTION, не должно совпадать с MOKO3_UNIQUE_NAME##suffix
+#define MOKO3_SECTION_NAME LOGIC_GUARDS_CONCAT(moko3_section, __LINE__, __LINE__)
 
 // __VA_ARGS__ must be FN, which accept `top_level_section* _section` and return test_run_info
 // name `_section` important for SECTION / GENERATE macros
@@ -29,13 +31,12 @@
 // May be used in tests, other sections.
 // Note: works in loops correctly
 // `...` accepts optional additional part of name for declaring sevral SECTION on same line (e.g. in macro)
-#define SECTION(NAME, ...)                                                                                \
-  static ::moko3::section_info MOKO3_UNIQUE_NAME##__VA_ARGS__{.name = NAME};                              \
-  _section->register_section(&MOKO3_UNIQUE_NAME##__VA_ARGS__);                                            \
-  if (_section->enter_section(&MOKO3_UNIQUE_NAME##__VA_ARGS__))                                           \
-    if (::zal::scope_exit _exit_guard{[&] { _section->leave_section(&MOKO3_UNIQUE_NAME##__VA_ARGS__); }}; \
-        true)                                                                                             \
-      if (auto* _section = &MOKO3_UNIQUE_NAME##__VA_ARGS__; true)
+#define SECTION(NAME, ...)                                                                          \
+  static const ::moko3::section_key MOKO3_UNIQUE_NAME##__VA_ARGS__{.name = NAME};                   \
+  if (::moko3::section_info* MOKO3_SECTION_NAME = _section->child(&MOKO3_UNIQUE_NAME##__VA_ARGS__); \
+      _section->enter_section(MOKO3_SECTION_NAME))                                                  \
+    if (::zal::scope_exit _exit_guard{[&] { _section->leave_section(MOKO3_SECTION_NAME); }}; true)  \
+      if (auto* _section = MOKO3_SECTION_NAME; true)
 
 // `forks` test and runs all of its cases with each value from __VA_ARGS__
 // may be used in SECTION too, invokes test with this section for each value

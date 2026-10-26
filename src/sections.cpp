@@ -11,23 +11,25 @@ void section_info::reuse() {
   was_entered = toplevel;
   current_run_section = nullptr;
   reuse_inners();
-  auto is_need_run = [](section_info* i) { return i->need_run(); };
+  auto is_need_run = [](auto& i) { return i->need_run(); };
   if (std::ranges::none_of(registered_sections, is_need_run) && has_more_generate_values()) {
     ++generate_index;
-    for (section_info* i : registered_sections)
+    for (auto& i : registered_sections)
       i->mark_not_entered();
   }
 }
 
-void section_info::register_section(section_info* s) noexcept {
-  assert(s);
-  if (s->registered)
-    return;
-  // ignore exceptions, it must be failure on exception in test system
-  if (std::find(registered_sections.begin(), registered_sections.end(), s) == registered_sections.end()) {
-    s->registered = true;
-    registered_sections.push_back(s);
+section_info* section_info::child(const section_key* key) {
+  assert(key);
+  for (auto& s : registered_sections) {
+    if (s->key == key)
+      return s.get();
   }
+  auto& s = registered_sections.emplace_back(std::make_unique<section_info>());
+  s->name = key->name;
+  s->key = key;
+  s->registered = true;
+  return s.get();
 }
 
 bool section_info::enter_section(section_info* s) noexcept {
@@ -57,7 +59,7 @@ void section_info::mark_toplevel() noexcept {
 }
 
 bool section_info::need_run() noexcept {
-  auto is_need_run = [](section_info* i) { return i->need_run(); };
+  auto is_need_run = [](auto& i) { return i->need_run(); };
   return !was_entered || has_more_generate_values() || std::ranges::any_of(registered_sections, is_need_run);
 }
 

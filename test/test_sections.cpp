@@ -152,6 +152,32 @@ bool metatest_generates_passed() {
   return metatest_generates_result == expected_metatest_result;
 }
 
+// одна и та же секция из исходника под разными родительскими секциями - разные секции
+inline std::vector<std::string> shared_sections_result;
+
+static void shared_sections_body(moko3::section_info* _section, std::string_view parent) {
+  SECTION("X") {
+    shared_sections_result.push_back(std::format("{}X", parent));
+  }
+  SECTION("Y") {
+    shared_sections_result.push_back(std::format("{}Y", parent));
+  }
+}
+
+TEST("METATEST SHARED SECTIONS") {
+  SECTION("A") {
+    shared_sections_body(_section, "A");
+  }
+  SECTION("B") {
+    shared_sections_body(_section, "B");
+  }
+}
+
+bool metatest_shared_sections_passed() {
+  std::vector<std::string> expected{"AX", "AY", "BX", "BY"};
+  return shared_sections_result == expected;
+}
+
 REGISTER_TEST_LISTENER(moko3::gtest_listener);
 #define THREE_SECTIONS \
   SECTION("A", 1) {    \
@@ -174,7 +200,7 @@ int main(int argc, char* argv[]) try {
   if (T2_run_count != 5 || T2_sum != (1 + 2 + 3 + 4 + 5))
     return -1;
   bool b = metatest_passed() && metatest1_passed() && metatest_simple_section_passed() &&
-           metatest_generates_passed();
+           metatest_generates_passed() && metatest_shared_sections_passed();
   if (!b)
     return -1;
   return i;

@@ -2,19 +2,31 @@
 
 #include <vector>
 #include <string>
+#include <string_view>
 #include <cassert>
+#include <memory>
 
 #include <iostream>
 
 namespace moko3 {
 
+// идентифицирует SECTION в исходнике, один статический объект на каждое использование макроса
+struct section_key {
+  std::string_view name;
+};
+
 struct section_info {
   std::string name;
+  // SECTION в исходнике, которую представляет эта секция (nullptr для верхнего уровня)
+  const section_key* key = nullptr;
   // inner section used in this run
   section_info* current_run_section = nullptr;
-  std::vector<section_info*> registered_sections;
+  // вложенные секции, создаются в `child`. Одна и та же SECTION в исходнике под разными родителями
+  // (например функция с секциями, вызываемая из нескольких секций) - разные секции, поэтому состояние
+  // хранится здесь, а не в статическом `section_key`
+  std::vector<std::unique_ptr<section_info>> registered_sections;
   bool was_entered = false;
-  bool registered = false;  // cache `register_section`
+  bool registered = false;
   bool toplevel = false;
   size_t generate_index = 0;
   size_t max_generation_index = size_t(-1);  //
@@ -31,7 +43,7 @@ struct section_info {
       assert(!has_more_generate_values());
       generate_index = 0;
     }
-    for (section_info* i : registered_sections)
+    for (auto& i : registered_sections)
       i->mark_not_entered();
   }
 
@@ -60,11 +72,12 @@ struct section_info {
   void reuse();
 
   void reuse_inners() {
-    for (section_info* s : registered_sections)
+    for (auto& s : registered_sections)
       s->reuse();
   }
 
-  void register_section(section_info* s) noexcept;
+  // возвращает вложенную секцию для `key`, при первом вызове создаёт её
+  [[nodiscard]] section_info* child(const section_key* key);
 
   // returns false if not entered
   [[nodiscard]] bool enter_section(section_info* s) noexcept;
