@@ -2,6 +2,7 @@
 
 #include "moko3/testbox.hpp"
 
+#include <exception>
 #include <iostream>
 #include <format>
 
