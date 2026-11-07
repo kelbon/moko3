@@ -19,7 +19,7 @@ CPMAddPackage(
 CPMAddPackage(
   NAME CLINOK
   GITHUB_REPOSITORY kelbon/clinok
-  GIT_TAG v2.0.1
+  GIT_TAG v2.1.0
 )
 
 find_package(Threads REQUIRED)
