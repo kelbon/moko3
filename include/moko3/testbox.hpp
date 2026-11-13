@@ -50,8 +50,15 @@ struct gtest_listener : test_listener_i {
   size_t runned_tests = 0;
   size_t runned_cases = 0;
   std::vector<std::string> failed;
+  std::ostream* outptr = nullptr;
+
+  std::ostream& out() const noexcept;
 
  public:
+  // nullptr - использовать поток testbox
+  explicit gtest_listener(std::ostream* out = nullptr) noexcept : outptr(out) {
+  }
+
   void on_start() noexcept override;
   void on_end() noexcept override;
   void on_test_start(testinfo const&) noexcept override;
@@ -72,7 +79,7 @@ struct testbox {
 
  public:
   std::minstd_rand randg;
-  std::ostream& out = std::cout;
+  std::ostream* out = &std::cout;
 
   testbox();
 

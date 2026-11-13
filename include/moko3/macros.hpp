@@ -22,8 +22,9 @@
 // registers global listener for all tests
 // NAME must be default constructible type, inherited from moko3::test_listener_i
 // listener must be registered before test run
-#define REGISTER_TEST_LISTENER(NAME) \
-  ::moko3::test_listener_registrator MOKO3_UNIQUE_NAME(::std::make_unique<NAME>())
+// '...' accepts arguments for listener constructor
+#define REGISTER_TEST_LISTENER(NAME, ...) \
+  ::moko3::test_listener_registrator MOKO3_UNIQUE_NAME(::std::make_unique<NAME>(__VA_ARGS__))
 
 /////////////////////////////////// SECTIONS ////////////////////////////////
 

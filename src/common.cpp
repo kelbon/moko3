@@ -19,9 +19,9 @@ test_exception::~test_exception() {
 
 test_failed::test_failed(std::string m, std::source_location l) noexcept : test_exception(std::move(m)) {
   // std::terminate on exceptions here
-  get_testbox().out << std::format("moko3:FAIL on {}:{}:{}\nFailure msg: \"{}\"", l.file_name(), l.line(),
-                                   l.column(), this->what())
-                    << std::endl;
+  *get_testbox().out << std::format("moko3:FAIL on {}:{}:{}\nFailure msg: \"{}\"", l.file_name(), l.line(),
+                                    l.column(), this->what())
+                     << std::endl;
 }
 
 void noexport::require_eq_failed(std::string_view macro, std::string_view astr, std::string_view bstr,

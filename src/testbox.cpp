@@ -6,24 +6,28 @@
 
 namespace moko3 {
 
+std::ostream& gtest_listener::out() const noexcept {
+  return outptr ? *outptr : *get_testbox().out;
+}
+
 void gtest_listener::on_start() noexcept {
   runned_tests = runned_cases = 0;
   failed.clear();
-  get_testbox().out << std::format("[   SEED   ] {}", get_testbox().random_seed()) << std::endl;
+  out() << std::format("[   SEED   ] {}", get_testbox().random_seed()) << std::endl;
 }
 
 void gtest_listener::on_end() noexcept {
-  get_testbox().out << std::format(
+  out() << std::format(
       "[==========] {} cases from {} tests ran\n"
       "[  PASSED  ] {} tests.\n",
       runned_cases, runned_tests, runned_cases - failed.size());
   if (!failed.empty()) {
-    get_testbox().out << std::format("[  FAILED  ] {} tests, listed below:\n", failed.size());
+    out() << std::format("[  FAILED  ] {} tests, listed below:\n", failed.size());
     for (std::string_view name : failed) {
-      get_testbox().out << std::format("[  FAILED  ] {}\n", name);
+      out() << std::format("[  FAILED  ] {}\n", name);
     }
   }
-  std::endl(get_testbox().out);
+  std::endl(out());
 }
 
 void gtest_listener::on_test_start(testinfo const& t) noexcept {
@@ -35,15 +39,15 @@ void gtest_listener::on_test_end(testinfo const& t) noexcept {
 void gtest_listener::on_test_case_start(testinfo const& t) noexcept {
   ++runned_cases;
   // flush for case if test deadlocks
-  get_testbox().out << std::format("[ RUN      ] {}", t.name) << std::endl;
+  out() << std::format("[ RUN      ] {}", t.name) << std::endl;
 }
 
 void gtest_listener::on_test_case_end(const test_run_info& t) noexcept {
   if (!t.failed) {
-    get_testbox().out << std::format("[       OK ] {}", t.casename) << '\n';
+    out() << std::format("[       OK ] {}", t.casename) << '\n';
   } else {
-    get_testbox().out << std::format("[  FAILED  ] {}", t.casename) << '\n';
-    get_testbox().out << t.failreason << '\n';
+    out() << std::format("[  FAILED  ] {}", t.casename) << '\n';
+    out() << t.failreason << '\n';
     failed.push_back(t.casename);
   }
 }
@@ -96,9 +100,9 @@ int testbox::run_tests() {
   if (config.dry_run) {
     for (const testinfo& i : tests) {
       if (std::regex_search(i.name, r))
-        out << i.name << '\n';
+        *out << i.name << '\n';
     }
-    out.flush();
+    out->flush();
     return 0;
   }
   int failed = 0;
