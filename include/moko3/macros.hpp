@@ -3,6 +3,7 @@
 // on_scope_exit / on_scope_failure macros
 #include "zal/zal.hpp"
 #include "moko3/testbox.hpp"
+#include "moko3/require_eq.hpp"
 
 /////////////////////////////////// UTILITY ////////////////////////////////
 
@@ -65,6 +66,10 @@
 /////////////////////////////////// ASSERTIONS ////////////////////////////////
 
 #define REQUIRE(...) (bool(__VA_ARGS__) ? (void)0 : FAIL(#__VA_ARGS__))
+
+// as REQUIRE(A == B), but prints values of A and B on failure (uses std::format / moko3_to_string)
+#define REQUIRE_EQ(A, B) ::moko3::noexport::require_eq(A, B, #A, #B)
+#define REQUIRE_NOT_EQ(A, B) ::moko3::noexport::require_not_eq(A, B, #A, #B)
 
 #define FAIL(MSG) throw ::moko3::test_failed(::std::string(MSG))
 
