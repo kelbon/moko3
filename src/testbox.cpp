@@ -46,7 +46,7 @@ void gtest_listener::on_test_case_end(const test_run_info& t) noexcept {
   }
 }
 
-testbox::testbox() : listener(std::make_unique<test_listener_i>()) {
+testbox::testbox() : listener(std::make_unique<gtest_listener>()) {
 }
 
 void testbox::register_test(std::string testname, test_fn_t* test) {
@@ -60,7 +60,7 @@ std::chrono::steady_clock::duration testbox::test_timeout(std::string_view testn
 
 void testbox::register_listener(std::unique_ptr<test_listener_i> l) {
   if (!l)
-    listener = std::unique_ptr<test_listener_i>();
+    listener = std::make_unique<test_listener_i>();  // does nothing
   else
     listener = std::move(l);
 }
@@ -71,6 +71,14 @@ void testbox::parse_config(int argc, char* argv[]) {
 
 int testbox::run_tests() {
   std::regex r(std::string(config.tests_regex));
+  if (config.dry_run) {
+    for (const testinfo& i : tests) {
+      if (std::regex_search(i.name, r))
+        out << i.name << '\n';
+    }
+    out.flush();
+    return 0;
+  }
   int failed = 0;
   listener->on_start();
   on_scope_exit {
@@ -78,8 +86,6 @@ int testbox::run_tests() {
   };
   for (const testinfo& i : tests) {
     if (!std::regex_search(i.name, r))
-      continue;
-    if (config.dry_run)
       continue;
     listener->on_test_start(i);
     section_info toplevel_section;

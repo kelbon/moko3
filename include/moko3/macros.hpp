@@ -59,18 +59,22 @@
 
 /////////////////////////////////// ASSERTIONS ////////////////////////////////
 
-#define REQUIRE(...)      \
-  if (!bool(__VA_ARGS__)) \
-  FAIL(#__VA_ARGS__)
+#define REQUIRE(...) (bool(__VA_ARGS__) ? (void)0 : FAIL(#__VA_ARGS__))
 
 #define FAIL(MSG) throw ::moko3::test_failed(::std::string(MSG))
 
-#define REQUIRE_NOTHROW(...)                                                 \
-  try {                                                                      \
-    __VA_ARGS__;                                                             \
-  } catch (::std::exception & e) {                                           \
-    FAIL(::std::format("expected to be nothrow, but throwed {}", e.what())); \
-  }
+#define REQUIRE_NOTHROW(...)                                                   \
+  do {                                                                         \
+    try {                                                                      \
+      __VA_ARGS__;                                                             \
+    } catch (::moko3::test_exception&) {                                       \
+      throw;                                                                   \
+    } catch (::std::exception & e) {                                           \
+      FAIL(::std::format("expected to be nothrow, but throwed {}", e.what())); \
+    } catch (...) {                                                            \
+      FAIL("expected to be nothrow, but throwed unknown exception");           \
+    }                                                                          \
+  } while (false)
 
 // creates and registers TEST. Code in test may use SECTION / GENERATE macros
 #define TEST(NAME)                                         \
@@ -83,9 +87,9 @@
   void MOKO3_UNIQUE_NAME(::moko3::section_info* _section)
 
 // declares and implements `main` which accepts and parses cli arguments, then runs tests
-#define MOKO3_MAIN                      \
-  int main(int argc, char* argv[]) {    \
-    auto& box = ::moko3::get_testbox(); \
-    box.parse_config(argc, argv);       \
-    return box.run_tests();             \
+#define MOKO3_MAIN                       \
+  int main(int argc, char* argv[]) {     \
+    auto& box = ::moko3::get_testbox();  \
+    box.parse_config(argc, argv);        \
+    return box.run_tests() == 0 ? 0 : 1; \
   }
