@@ -76,6 +76,18 @@
     }                                                                          \
   } while (false)
 
+// any exception accepted
+#define REQUIRE_THROWS(...)                              \
+  do {                                                   \
+    try {                                                \
+      __VA_ARGS__;                                       \
+      FAIL("expected to throw, but nothing was thrown"); \
+    } catch (::moko3::test_exception&) {                 \
+      throw;                                             \
+    } catch (...) {                                      \
+    }                                                    \
+  } while (false)
+
 // creates and registers TEST. Code in test may use SECTION / GENERATE macros
 #define TEST(NAME)                                         \
   void MOKO3_UNIQUE_NAME(::moko3::section_info* _section); \
