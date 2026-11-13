@@ -29,11 +29,12 @@ struct section_info {
   bool registered = false;
   bool toplevel = false;
   size_t generate_index = 0;
-  size_t max_generation_index = size_t(-1);  //
-  int generate_line = -1;                    // line where GENERATE called
+  size_t max_generation_index = size_t(-1);
+  // false после SECTION/GENERATE
+  bool can_generate = true;
 
   [[nodiscard]] bool has_generate() const noexcept {
-    return generate_line != -1;
+    return max_generation_index != size_t(-1);
   }
 
   void mark_not_entered() noexcept {
@@ -42,6 +43,8 @@ struct section_info {
     if (has_generate()) {
       assert(!has_more_generate_values());
       generate_index = 0;
+      // GENERATE может зависеть от родительской секции, количество значений запоминается заново
+      max_generation_index = size_t(-1);
     }
     for (auto& i : registered_sections)
       i->mark_not_entered();
@@ -55,15 +58,17 @@ struct section_info {
   [[nodiscard]] std::ranges::range_value_t<R> next_generated_value(R values, int line) noexcept {
     static_assert(std::ranges::random_access_range<R> && std::ranges::sized_range<R>);
     // ignore exceptions here
-    if (has_generate() && line != generate_line) {
-      std::cerr << "!!!GENERATE MUST BE CALLED ONLY ONCE!!! abort called in test " << name << std::endl;
+    if (!can_generate) {
+      std::cerr << "!!!GENERATE MUST BE CALLED ONLY ONCE AND BEFORE ANY SECTION!!! abort called in test "
+                << name << ", line " << line << std::endl;
       std::abort();
     }
+    can_generate = false;
     if (!has_generate()) {
-      generate_line = line;
       assert(std::ranges::size(values) > 0);
       max_generation_index = std::ranges::size(values) - 1;
     }
+    assert(max_generation_index == std::ranges::size(values) - 1);
     return std::move(values[generate_index]);
   }
 
