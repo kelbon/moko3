@@ -1,5 +1,7 @@
 #include "moko3/moko3.hpp"
 
+#include <sstream>
+
 inline std::vector<std::string> output;
 
 struct tlistener : moko3::test_listener_i {
@@ -36,12 +38,47 @@ TEST("B") {
   (void)GENERATE(1);
 }
 
+TEST("C") {
+  // REQUIRE - выражение, else относится к внешнему if
+  if (true)
+    REQUIRE(true);
+  else
+    FAIL("unreachable");
+  REQUIRE_NOTHROW((void)0);
+  REQUIRE_THROWS(throw 1);
+}
+
+TEST("D") {
+  REQUIRE_NOTHROW(throw 1);
+}
+
+// падение теста внутри не перехватывается
+TEST("E") {
+  REQUIRE_NOTHROW(REQUIRE(false));
+}
+
+TEST("F") {
+  REQUIRE_THROWS((void)0);
+}
+
+TEST("G") {
+  REQUIRE_THROWS(REQUIRE(false));
+}
+
 int main() {
-  int i = moko3::get_testbox().run_tests();
-  REQUIRE(i == 1);
+  auto& box = moko3::get_testbox();
+  int i = box.run_tests();
+  REQUIRE(i == 5);
+  // clang-format off
   std::vector<std::string> expected{
       "started A", "case started A", "case failed A::B", "ended A",  // must stop after first failure in test
-      "started B", "case started B", "case ended B::G0", "ended B",
+      "started B",  "case started B", "case ended B::G0", "ended B",
+      "started C", "case started C", "case ended C",   "ended C",
+      "started D", "case started D", "case failed D",  "ended D",
+      "started E", "case started E", "case failed E", "ended E",
+      "started F", "case started F", "case failed F",  "ended F",
+      "started G", "case started G", "case failed G",    "ended G",
   };
+  // clang-format on
   REQUIRE(expected == output);
 }
