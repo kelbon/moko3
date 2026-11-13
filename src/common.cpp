@@ -1,6 +1,7 @@
 #include "moko3/common.hpp"
 
 #include "moko3/testbox.hpp"
+#include "moko3/require_eq.hpp"
 
 #include <exception>
 #include <iostream>
@@ -21,6 +22,11 @@ test_failed::test_failed(std::string m, std::source_location l) noexcept : test_
   get_testbox().out << std::format("moko3:FAIL on {}:{}:{}\nFailure msg: \"{}\"", l.file_name(), l.line(),
                                    l.column(), this->what())
                     << std::endl;
+}
+
+void noexport::require_eq_failed(std::string_view macro, std::string_view astr, std::string_view bstr,
+                                 std::string a, std::string b, std::source_location l) {
+  throw test_failed(std::format("{}({}, {})\n  {} = {}\n  {} = {}", macro, astr, bstr, astr, a, bstr, b), l);
 }
 
 }  // namespace moko3
