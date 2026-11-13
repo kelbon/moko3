@@ -53,11 +53,9 @@ struct section_info {
   [[nodiscard]] bool has_more_generate_values() const noexcept {
     return has_generate() && generate_index < max_generation_index;
   }
-  // used by GENERATE macro on each invocation (even first)
-  template <typename R>
-  [[nodiscard]] std::ranges::range_value_t<R> next_generated_value(R values, int line) noexcept {
-    static_assert(std::ranges::random_access_range<R> && std::ranges::sized_range<R>);
-    // ignore exceptions here
+  // used by GENERATE macros on each invocation (even first)
+  // returns index of value for this run
+  [[nodiscard]] size_t next_generated_index(size_t count, int line) noexcept {
     if (!can_generate) {
       std::cerr << "!!!GENERATE MUST BE CALLED ONLY ONCE AND BEFORE ANY SECTION!!! abort called in test "
                 << name << ", line " << line << std::endl;
@@ -65,11 +63,18 @@ struct section_info {
     }
     can_generate = false;
     if (!has_generate()) {
-      assert(std::ranges::size(values) > 0);
-      max_generation_index = std::ranges::size(values) - 1;
+      assert(count > 0);
+      max_generation_index = count - 1;
     }
-    assert(max_generation_index == std::ranges::size(values) - 1);
-    return std::move(values[generate_index]);
+    assert(max_generation_index == count - 1);
+    return generate_index;
+  }
+
+  template <typename R>
+  [[nodiscard]] std::ranges::range_value_t<R> next_generated_value(R values, int line) noexcept {
+    static_assert(std::ranges::random_access_range<R> && std::ranges::sized_range<R>);
+    // ignore exceptions here
+    return std::move(values[next_generated_index(std::ranges::size(values), line)]);
   }
 
   // resets *this and inner sections to be ready to run again

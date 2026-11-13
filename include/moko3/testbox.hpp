@@ -68,6 +68,7 @@ struct testbox {
   std::unique_ptr<test_listener_i> listener;
   moko3::cli::options config;
   section_info* cur_running_test = nullptr;
+  size_t seed = 0;
 
  public:
   std::minstd_rand randg;
@@ -75,9 +76,17 @@ struct testbox {
 
   testbox();
 
-  void set_random(size_t seed) noexcept {
+  void set_random(size_t s) noexcept {
+    seed = s;
     randg = std::minstd_rand(seed);
   }
+
+  size_t random_seed() const noexcept {
+    return seed;
+  }
+
+  // result depends on --seed, name of current test, name of section and `index`
+  size_t generate_random(const section_info&, size_t index) const noexcept;
 
   void register_test(std::string testname, test_fn_t* test);
   void register_listener(std::unique_ptr<test_listener_i>);

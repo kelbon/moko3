@@ -1,5 +1,6 @@
 #include "moko3/testbox.hpp"
 
+#include <cstdint>
 #include <regex>
 #include "zal/zal.hpp"
 
@@ -8,6 +9,7 @@ namespace moko3 {
 void gtest_listener::on_start() noexcept {
   runned_tests = runned_cases = 0;
   failed.clear();
+  get_testbox().out << std::format("[   SEED   ] {}", get_testbox().random_seed()) << std::endl;
 }
 
 void gtest_listener::on_end() noexcept {
@@ -47,6 +49,24 @@ void gtest_listener::on_test_case_end(const test_run_info& t) noexcept {
 }
 
 testbox::testbox() : listener(std::make_unique<gtest_listener>()) {
+  set_random(std::random_device{}());
+}
+
+// simple hash, do not depends on system
+static uint64_t hash_name(std::string_view name, uint64_t h) noexcept {
+  for (unsigned char c : name)
+    h = (h ^ c) * 0x100000001b3ull;
+  return h;
+}
+
+size_t testbox::generate_random(const section_info& s, size_t index) const noexcept {
+  uint64_t h = 0xcbf29ce484222325ull ^ seed;
+  if (cur_running_test)
+    h = hash_name(cur_running_test->name, h);
+  h = hash_name(s.name, hash_name("::", h));
+  std::minstd_rand gen(uint32_t(h ^ (h >> 32)));
+  gen.discard(index);
+  return gen();
 }
 
 void testbox::register_test(std::string testname, test_fn_t* test) {
@@ -67,6 +87,8 @@ void testbox::register_listener(std::unique_ptr<test_listener_i> l) {
 
 void testbox::parse_config(int argc, char* argv[]) {
   config = moko3::cli::parse_or_exit(argc, argv);
+  if (config.seed != 0)
+    set_random(config.seed);
 }
 
 int testbox::run_tests() {
@@ -82,6 +104,7 @@ int testbox::run_tests() {
   int failed = 0;
   listener->on_start();
   on_scope_exit {
+    cur_running_test = nullptr;
     listener->on_end();
   };
   for (const testinfo& i : tests) {

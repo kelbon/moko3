@@ -57,6 +57,11 @@
 //  }
 #define GENERATE_RANGE(...) _section->next_generated_value(__VA_ARGS__, __LINE__)
 
+// produces COUNT of random size_t values. Same values for same --seed & test
+// similar to GENERATE(rand1, rand2, ... COUNT times)
+#define GENERATE_RANDOM(COUNT) \
+  ::moko3::get_testbox().generate_random(*_section, _section->next_generated_index(COUNT, __LINE__))
+
 /////////////////////////////////// ASSERTIONS ////////////////////////////////
 
 #define REQUIRE(...) (bool(__VA_ARGS__) ? (void)0 : FAIL(#__VA_ARGS__))

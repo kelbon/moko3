@@ -4,7 +4,9 @@ STRING(tests_regex, "Run tests matching regular expression.", default(""))
 RENAME(tests_regex, "tests-regex")
 ALIAS(R, tests-regex)
 
-INTEGER(timeout, "Set the default test timeout.", default("30"))
+INTEGER(timeout, "Set the default test timeout in seconds", default_value(30))
+
+INTEGER(seed, "Seed for random values, 0 means random seed", default_value(0))
 
 TAG(dry_run, "Only prints tests, not runs them")
 
