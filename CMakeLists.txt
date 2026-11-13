@@ -1,11 +1,21 @@
 cmake_minimum_required(VERSION 3.20)
 project(moko3)
 
-include(cmake/deps.cmake)
-
 option(moko3_ENABLE_TESTING "enables testing" OFF)
 option(moko3_ENABLE_ASAN "build ASAN (for CI)" OFF)
-option(moko3_ENABLE_UBSAN "build UNSAN (for CI)" OFF)
+option(moko3_ENABLE_UBSAN "build UBSAN (for CI)" OFF)
+
+# before deps: all targets must be compiled with sanitizer flags
+if(moko3_ENABLE_ASAN)
+  add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+  add_link_options(-fsanitize=address)
+endif()
+if(moko3_ENABLE_UBSAN)
+  add_compile_options(-fsanitize=undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer)
+  add_link_options(-fsanitize=undefined)
+endif()
+
+include(cmake/deps.cmake)
 
 add_library(moko3lib STATIC
     # add new .cpp files here. GLOB for libraries is bad practice  

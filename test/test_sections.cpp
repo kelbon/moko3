@@ -178,7 +178,7 @@ bool metatest_shared_sections_passed() {
   return shared_sections_result == expected;
 }
 
-REGISTER_TEST_LISTENER(moko3::gtest_listener);
+REGISTER_TEST_LISTENER(moko3::gtest_listener, &std::cout);
 #define THREE_SECTIONS \
   SECTION("A", 1) {    \
   }                    \

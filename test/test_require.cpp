@@ -79,4 +79,16 @@ int main() {
   };
   // clang-format on
   REQUIRE(expected == output);
+
+  // dry-run только печатает имена тестов, подходящих под regex
+  char arg0[] = "test", arg1[] = "--dry-run", arg2[] = "-R", arg3[] = "[A-C]";
+  char* args[] = {arg0, arg1, arg2, arg3, nullptr};
+  box.parse_config(4, args);
+  std::ostringstream printed;
+  box.out = &printed;
+  i = box.run_tests();
+  box.out = &std::cout;
+  REQUIRE(i == 0);
+  REQUIRE(printed.str() == "A\nB\nC\n");
+  REQUIRE(expected == output);
 }
