@@ -45,7 +45,17 @@
 //  TEST("my test") {
 //    int i = GENERATE(1, 2, 3);
 //  }
+// Must be called before any other SECTION/GENERATE in its section
 #define GENERATE(...) _section->next_generated_value(::std::to_array({__VA_ARGS__}), __LINE__)
+
+// same as GENERATE, but accepts range of values (random access and sized, e.g. std::vector).
+// Range may depend on GENERATE of parent section
+//
+// example (runs "my test" for each pair):
+//  TEST("my test") {
+//    auto [i, s] = GENERATE_RANGE(std::views::cartesian_product(ints, strings));
+//  }
+#define GENERATE_RANGE(...) _section->next_generated_value(__VA_ARGS__, __LINE__)
 
 /////////////////////////////////// ASSERTIONS ////////////////////////////////
 

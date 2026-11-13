@@ -21,6 +21,7 @@ void section_info::reuse() {
 
 section_info* section_info::child(const section_key* key) {
   assert(key);
+  can_generate = false;
   for (auto& s : registered_sections) {
     if (s->key == key)
       return s.get();
@@ -34,8 +35,13 @@ section_info* section_info::child(const section_key* key) {
 
 bool section_info::enter_section(section_info* s) noexcept {
   assert(s);
-  if (current_run_section)
-    return s == current_run_section;  // allow to sections in loop
+  if (current_run_section) {
+    // allow to sections in loop
+    if (s != current_run_section)
+      return false;
+    s->can_generate = true;
+    return true;
+  }
   if (!s->need_run())
     return false;
   current_run_section = s;
@@ -50,6 +56,7 @@ void section_info::leave_section(section_info* s) noexcept {
 
 void section_info::prepare_to_run() noexcept {
   current_run_section = nullptr;
+  can_generate = true;
 }
 
 void section_info::mark_toplevel() noexcept {
