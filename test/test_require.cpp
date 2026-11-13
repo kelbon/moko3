@@ -1,7 +1,5 @@
 #include "moko3/moko3.hpp"
 
-#include <sstream>
-
 inline std::vector<std::string> output;
 
 struct tlistener : moko3::test_listener_i {

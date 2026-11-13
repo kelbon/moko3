@@ -34,7 +34,7 @@ TEST("to_string") {
   // найдена через ADL
   REQUIRE(moko3_to_string(ns::printable{5}) == "printable5");
   REQUIRE(moko3_to_string(ns::unprintable{}) == "{?}");
-#if __cpp_lib_format_ranges > 202002L
+#if __cpp_lib_format_ranges >= 202207L
   REQUIRE(moko3_to_string(42) == "42");
 #else
   REQUIRE(moko3_to_string(42) == "{?}");
