@@ -15,7 +15,7 @@ namespace moko3 {
 template <typename T>
 std::string moko3_to_string(const T& v) {
   // __cpp_lib_format_ranges появилось тогда же когда и formattable
-#if __cpp_lib_format_ranges > 202002L
+#if __cpp_lib_format_ranges >= 202207L
   if constexpr (std::formattable<T, char>)
     return std::format("{}", v);
 #endif
@@ -25,7 +25,6 @@ std::string moko3_to_string(const T& v) {
 
 namespace noexport {
 
-// std::cmp_equal не принимает bool и символы
 template <typename T>
 concept cmp_integer =
     std::integral<T> && !std::same_as<T, bool> && !std::same_as<T, char> && !std::same_as<T, wchar_t> &&
